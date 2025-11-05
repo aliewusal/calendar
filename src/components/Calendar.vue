@@ -29,7 +29,7 @@ const selectedDate = ref<Date>(new Date())
 const year = ref<number>(new Date().getFullYear())
 const month = ref<number>(new Date().getMonth())
 
-const days = computed<Array<{ value: number | undefined; index: number }>>(() => {
+const days = computed<Array<{ date: Date | undefined; index: number }>>(() => {
   const ds = []
   const firstMonthDate = new Date(year.value, month.value, 1)
   const lastMonthDate = new Date(year.value, month.value + 1, 0).getDate()
@@ -37,13 +37,13 @@ const days = computed<Array<{ value: number | undefined; index: number }>>(() =>
   let index = 0
   for (let i = 0; i < startWeekDay; i++) {
     ds.push({
-      value: undefined,
+      date: undefined,
       index: ++index,
     })
   }
   for (let i = 1; i <= lastMonthDate; i++) {
     ds.push({
-      value: i,
+      date: new Date(year.value, month.value, i),
       index: ++index,
     })
   }
@@ -76,9 +76,10 @@ function prev() {
   }
 }
 
-function setDate(day?: number) {
-  if (day) {
-    selectedDate.value = new Date(year.value, month.value, day)
+function setDate(date?: Date) {
+  if (date) {
+    selectedDate.value = date
+    const day = date.getDate()
     const m = month.value < 9 ? `0${month.value + 1}` : month.value + 1
     const d = day < 10 ? `0${day}` : day
     emits('getDate', `${year.value}-${m}-${d}`)
@@ -98,10 +99,10 @@ function init() {
   }
 }
 
-function selectedClass(day?: number): boolean {
-  if (!day) return false
+function selectedClass(date?: Date): boolean {
+  if (!date) return false
   return (
-    `${year.value}-${month.value}-${day}` ===
+    `${year.value}-${month.value}-${date.getDate()}` ===
     `${selectedDate.value.getFullYear()}-${selectedDate.value.getMonth()}-${selectedDate.value.getDate()}`
   )
 }
@@ -122,11 +123,11 @@ function selectedClass(day?: number): boolean {
     <div class="days">
       <div v-for="day in days" :key="day.index">
         <div
-          @click="setDate(day.value)"
+          @click="setDate(day.date)"
           class="day"
-          :class="{ 'selected-day': selectedClass(day.value) }"
+          :class="{ 'selected-day': selectedClass(day.date) }"
         >
-          {{ day.value }}
+          {{ day.date ? day.date.getDate() : day.date }}
         </div>
       </div>
     </div>
